@@ -197,73 +197,58 @@ def mostrar_menu():
 def mostrar_submenu():
     limpiar_pantalla()
     print(Fore.BLUE + Style.BRIGHT + "===== SELECCIÓN DE COMUNA =====")
-    print(Fore.CYAN + "1. TALCA")
-    print(Fore.CYAN + "2. LINARES")
-    print(Fore.CYAN + "3. CURICO")
+    print(Fore.CYAN + "1. CURICO")
+    print(Fore.CYAN + "2. TALCA")
+    print(Fore.CYAN + "3. LINARES")
     print(Fore.CYAN + "4. Salir")
 
     seleccion = input(Fore.GREEN + "Seleccione una comuna: ")
     return seleccion
 
 def mostrar_clientes(comuna):
-    if comuna not in datos:
-        print(Fore.RED + f"La comuna '{comuna}' no está en los datos.")
-        return
-
-    df = datos[comuna]
-    if 'Cliente' in df.columns:
-        for _, row in df.iterrows():
-            print(Fore.GREEN + f"Cliente: {row['Cliente']} - Factura: {row['Nº Factura']} - Vencimiento: {row['Vencimiento']}")
+    if comuna in datos:
+        df = datos[comuna]
+        if 'Cliente' in df.columns:
+            print(Fore.GREEN + f"Clientes en la comuna '{comuna}':")
+            print(df[['Cliente', 'Nº Factura', 'Vencimiento']].to_string(index=False))
+        else:
+            print(Fore.RED + f"La columna 'Cliente' no se encuentra en la hoja {comuna}.")
     else:
-        print(Fore.RED + f"La columna 'Cliente' no existe en la hoja {comuna}.")
-    
-    input(Fore.GREEN + "\nPresione Enter para volver al menú...")
+        print(Fore.RED + f"No hay datos para la comuna '{comuna}'.")
 
 def bloquear_cliente(nombre, comuna):
-    if comuna not in datos:
-        print(Fore.RED + f"La comuna '{comuna}' no está en los datos.")
-        return
-
-    df = datos[comuna]
-    if 'Cliente' in df.columns:
-        df.loc[df['Cliente'] == nombre, 'Estado'] = 'bloqueado'
-        print(Fore.GREEN + f"El cliente {nombre} ha sido bloqueado en la comuna {comuna}.")
+    if comuna in datos:
+        df = datos[comuna]
+        if 'Cliente' in df.columns:
+            df.loc[df['Cliente'].str.strip() == nombre, 'Estado'] = 'bloqueado'
+            print(Fore.GREEN + f"Cliente '{nombre}' bloqueado en la comuna '{comuna}'.")
+        else:
+            print(Fore.RED + f"La columna 'Cliente' no se encuentra en la hoja {comuna}.")
     else:
-        print(Fore.RED + f"La columna 'Cliente' no existe en la hoja {comuna}.")
-    
-    # Guardar cambios
-    guardar_cambios()
+        print(Fore.RED + f"No hay datos para la comuna '{comuna}'.")
 
 def desbloquear_cliente(nombre, comuna):
-    if comuna not in datos:
-        print(Fore.RED + f"La comuna '{comuna}' no está en los datos.")
-        return
-
-    df = datos[comuna]
-    if 'Cliente' in df.columns:
-        df.loc[df['Cliente'] == nombre, 'Estado'] = 'activo'
-        print(Fore.GREEN + f"El cliente {nombre} ha sido desbloqueado en la comuna {comuna}.")
+    if comuna in datos:
+        df = datos[comuna]
+        if 'Cliente' in df.columns:
+            df.loc[df['Cliente'].str.strip() == nombre, 'Estado'] = 'activo'
+            print(Fore.GREEN + f"Cliente '{nombre}' desbloqueado en la comuna '{comuna}'.")
+        else:
+            print(Fore.RED + f"La columna 'Cliente' no se encuentra en la hoja {comuna}.")
     else:
-        print(Fore.RED + f"La columna 'Cliente' no existe en la hoja {comuna}.")
-    
-    # Guardar cambios
-    guardar_cambios()
+        print(Fore.RED + f"No hay datos para la comuna '{comuna}'.")
 
 def eliminar_cliente(nombre, comuna):
-    if comuna not in datos:
-        print(Fore.RED + f"La comuna '{comuna}' no está en los datos.")
-        return
-
-    df = datos[comuna]
-    if 'Cliente' in df.columns:
-        df = df[df['Cliente'] != nombre]
-        datos[comuna] = df
-        print(Fore.GREEN + f"El cliente {nombre} ha sido eliminado de la comuna {comuna}.")
+    if comuna in datos:
+        df = datos[comuna]
+        if 'Cliente' in df.columns:
+            df = df[df['Cliente'].str.strip() != nombre]
+            datos[comuna] = df
+            print(Fore.GREEN + f"Cliente '{nombre}' eliminado de la comuna '{comuna}'.")
+        else:
+            print(Fore.RED + f"La columna 'Cliente' no se encuentra en la hoja {comuna}.")
     else:
-        print(Fore.RED + f"La columna 'Cliente' no existe en la hoja {comuna}.")
-    
-    # Guardar cambios
-    guardar_cambios()
+        print(Fore.RED + f"No hay datos para la comuna '{comuna}'.")
 
 def main():
     while True:
@@ -273,28 +258,45 @@ def main():
             comuna = mostrar_submenu()
             if comuna == '4':
                 continue
-            mostrar_clientes(hojas[int(comuna)-1])
+            nombre_hoja = hojas[int(comuna) - 1] if comuna in ['1', '2', '3'] else None
+            if nombre_hoja:
+                mostrar_clientes(nombre_hoja)
+            else:
+                print(Fore.RED + "Opción no válida. Intente de nuevo.")
         elif opcion == '2':
             comuna = mostrar_submenu()
             if comuna == '4':
                 continue
             nombre = input(Fore.GREEN + "Ingrese el nombre del cliente a bloquear: ")
-            bloquear_cliente(nombre, hojas[int(comuna)-1])
+            nombre_hoja = hojas[int(comuna) - 1] if comuna in ['1', '2', '3'] else None
+            if nombre_hoja:
+                bloquear_cliente(nombre, nombre_hoja)
+            else:
+                print(Fore.RED + "Opción no válida. Intente de nuevo.")
         elif opcion == '3':
             comuna = mostrar_submenu()
             if comuna == '4':
                 continue
             nombre = input(Fore.GREEN + "Ingrese el nombre del cliente a desbloquear: ")
-            desbloquear_cliente(nombre, hojas[int(comuna)-1])
+            nombre_hoja = hojas[int(comuna) - 1] if comuna in ['1', '2', '3'] else None
+            if nombre_hoja:
+                desbloquear_cliente(nombre, nombre_hoja)
+            else:
+                print(Fore.RED + "Opción no válida. Intente de nuevo.")
         elif opcion == '4':
             comuna = mostrar_submenu()
             if comuna == '4':
                 continue
             nombre = input(Fore.GREEN + "Ingrese el nombre del cliente a eliminar: ")
-            eliminar_cliente(nombre, hojas[int(comuna)-1])
+            nombre_hoja = hojas[int(comuna) - 1] if comuna in ['1', '2', '3'] else None
+            if nombre_hoja:
+                eliminar_cliente(nombre, nombre_hoja)
+            else:
+                print(Fore.RED + "Opción no válida. Intente de nuevo.")
         elif opcion == '5':
             crear_excel_formateado()
         elif opcion == '6':
+            guardar_cambios()
             print(Fore.YELLOW + "Saliendo...")
             break
         else:
